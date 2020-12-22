@@ -18,9 +18,9 @@ void RGBLED_init(void)
     GPIO_setOutputLowOnPin(RGB_PORT, RGB_ALL_PINS);
 }
 
-void RGBLED_togglePin(int port)
+void RGBLED_togglePin(int pin)
 {
-    MAP_GPIO_toggleOutputOnPin(RGB_PORT, 1 << port);
+    MAP_GPIO_toggleOutputOnPin(RGB_PORT, 1 << pin);
 }
 
 void RGBLED_turnOff()
@@ -28,9 +28,9 @@ void RGBLED_turnOff()
     MAP_GPIO_setOutputLowOnPin(RGB_PORT, RGB_ALL_PINS);
 }
 
-void RGBLED_turnOnPortOnly(int port)
+void RGBLED_turnOnOnlyPin(int pin)
 {
-    int mask = 1 << port;
+    int mask = 1 << pin;
     MAP_GPIO_setOutputLowOnPin(RGB_PORT, ~mask);
     MAP_GPIO_setOutputHighOnPin(RGB_PORT, mask);
 }

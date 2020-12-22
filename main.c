@@ -56,23 +56,31 @@
 #include "rgbLED.h"
 #include "Switches.h"
 
-#define blinkRate 10135
-
 int activeLED = 0;
 
-/*
- * Sets up I/O
+/*!
+ * \brief This function sets up the device
+ *
+ * This function sets P2.0, P2.1, and P2.2 as outputs,
+ * P1.1 and P1.4 as inputs, and sets up the SysTick timer.
+ *
+ * \return None
  */
 void setup()
 {
     RGBLED_init();
     Switch_init();
+    MAP_SysTick_enableModule();
+    MAP_SysTick_setPeriod(1509000);
 }
 
-/*
- * Function for debouncing a switch through a delay
+/*!
+ * \brief This function debounces switch pressed
  *
- * Delay is ~3.337 ms
+ * This function loads a count-down value for a delay.
+ * Delay is ~3.337ms
+ *
+ * \return None
  */
 void debounce()
 {
@@ -83,14 +91,22 @@ void debounce()
     }
 }
 
-/*
- * State where the LED blinks at 1 Hz while waiting for switch input
+/*!
+ * \brief This function blinks the LED at 1Hz while waiting for input
+ *
+ * This function uses the SysTick to blink the LED at a rate of 1Hz with a 50%
+ * duty cycle. It also checks for input.\n
+ *
+ * On press of S1, the LED turns off and it returns to looping.
+ * On press of S2, it cycles between the RGB LEDs on P2.0.
+ *
+ * \return None
  */
 void ledBlink()
 {
-    int counter = blinkRate;
     RGBLED_togglePin(activeLED);
-    while (1)
+    // Check for switch input until timer hits 0
+    while (((SysTick->CTRL) & SysTick_CTRL_COUNTFLAG_Msk) == 0)
     {
         // Turn off LED is S1 pressed
         if (Switch_pressed(1))
@@ -103,23 +119,23 @@ void ledBlink()
         if (Switch_pressed(4))
         {
             activeLED = (activeLED + 1) % 3;
-            RGBLED_turnOnPortOnly(activeLED);
+            RGBLED_turnOnOnlyPin(activeLED);
             debounce();
             while (Switch_pressed(4))
                 ;
         }
-        // if counter == 0, toggle LED, reset counter
-        if (!counter)
-        {
-            RGBLED_togglePin(activeLED);
-            counter = blinkRate;
-        }
-        counter--;
     }
+    ledBlink();
 }
 
-/*
- * Basic flow state
+/*!
+ * \brief This function waits for S1 input
+ *
+ * This function waits for S1 to be pressed and released, then goes to the
+ * blinking state. After blinking, it waits for S1 to be released before
+ * looping back and waiting for a new S1 press
+ *
+ * \return None
  */
 void loop()
 {
@@ -138,8 +154,13 @@ void loop()
     debounce();
 }
 
-/*
- * Start of the program
+/*!
+ * \brief Starting point of the program
+ *
+ * This function is where the program starts. It initializes I/O, then goes
+ * into a loop function.
+ *
+ * \return An integer
  */
 int main(void)
 {

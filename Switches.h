@@ -8,12 +8,6 @@
 #ifndef SWITCHES_H_
 #define SWITCHES_H_
 
-//*****************************************************************************
-//
-// If building with a C++ compiler, make all of the definitions in this header
-// have a C binding.
-//
-//*****************************************************************************
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,12 +16,10 @@ extern "C" {
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 #define SWITCH_PORT                                                 GPIO_PORT_P1
-#define S1_PIN                                                      GPIO_PIN1
-#define S2_PIN                                                      GPIO_PIN4
 #define SWITCH_PINS                                                 (0x0012)
 
 /*!
- * \brief This function configures the switch pins as input pins
+ * \brief This function configures the switches as inputs
  *
  * This function configures P1.1 and P1.4 as input pins with pull-up resistors
  *
@@ -36,21 +28,20 @@ extern "C" {
 extern void Switch_init(void);
 
 /*!
- * \brief Get whether a switch is pressed
+ * \brief This function determines whether a switch is pressed
  *
- * This function gets the input of Switch s
+ * This function gets the value at the pin and transforms it into a boolean to
+ * convey whether or not the switch is pressed
  *
- * \param port is the port to check the input (S1 = 1, S2 = 4)
+ * \param pin is the pin to check the input
+ *          Valid values are:
+ *          - \b 1 (P1.1 = S1)
+ *          - \b 4 (P1.4 = S2)
  *
  * \return true if the switch is pressed, false otherwise
  */
-extern bool Switch_pressed(int port);
+extern bool Switch_pressed(int pin);
 
-//*****************************************************************************
-//
-// Mark the end of the C bindings section for C++ compilers.
-//
-//*****************************************************************************
 #ifdef __cplusplus
 }
 #endif

@@ -14,10 +14,9 @@ void Switch_init(void)
     GPIO_setAsInputPinWithPullUpResistor(SWITCH_PORT, SWITCH_PINS);
 }
 
-extern bool Switch_pressed(int port)
+extern bool Switch_pressed(int pin)
 {
-    // GPIO_INPUT_PIN_HIGH
     return GPIO_getInputPinValue(SWITCH_PORT,
-                                 1 << port) == GPIO_INPUT_PIN_HIGH ?
+                                 1 << pin) == GPIO_INPUT_PIN_HIGH ?
             false : true;
 }
