@@ -4,7 +4,7 @@
  * Libraries:   SysTick and GPIO from DriverLib
  */
 /************************************************************************
- * MSP432 Project 3 ECE230 Winter 2020-2021
+ * MSP432 Project 2 ECE230 Winter 2020-2021
  *
  * Description: S1 toggles whether the LED is blinking.
  *              S2 toggles which LED is blinking in order of R->G->B.
