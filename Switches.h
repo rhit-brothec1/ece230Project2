@@ -16,7 +16,7 @@ extern "C" {
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 #define SWITCH_PORT                                                 GPIO_PORT_P1
-#define SWITCH_PIN                                                 (0x0012)
+#define SWITCH_PINS                                                 (0x0012)
 
 /*!
  * \brief This function configures the switches as inputs
