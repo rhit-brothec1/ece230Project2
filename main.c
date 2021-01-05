@@ -1,38 +1,14 @@
-/* --COPYRIGHT--,BSD
- * Copyright (c) 2017, Texas Instruments Incorporated
- * All rights reserved.
+/*
+ * Author:      Cooper Brotherton
+ * Date:        January 5, 2021
+ * Libraries:   SysTick and GPIO from DriverLib
+ */
+/************************************************************************
+ * MSP432 Project 3 ECE230 Winter 2020-2021
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * *  Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * *  Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * *  Neither the name of Texas Instruments Incorporated nor the names of
- *    its contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * --/COPYRIGHT--*/
-/******************************************************************************
- * MSP432 Empty Project
- *
- * Description: An empty project that uses DriverLib
+ * Description: S1 toggles whether the LED is blinking.
+ *              S2 toggles which LED is blinking in order of R->G->B.
+ *              Active LED blinks at for 500ms, off for 500ms.
  *
  *                MSP432P401
  *             ------------------
@@ -40,12 +16,12 @@
  *          | |                  |
  *          --|RST               |
  *            |                  |
+ *       S1-->|P1.1        P2.0  |---> LED2 red
+ *            |            P2.1  |---> LED2 green
+ *       S2-->|P1.4        P2.2  |---> LED2 blue
  *            |                  |
- *            |                  |
- *            |                  |
- *            |                  |
- * Author: Cooper Brotherton
- *******************************************************************************/
+ *
+*************************************************************************/
 /* DriverLib Includes */
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
@@ -104,28 +80,31 @@ void debounce()
  */
 void ledBlink()
 {
-    RGBLED_togglePin(activeLED);
-    // Check for switch input until timer hits 0
-    while (((SysTick->CTRL) & SysTick_CTRL_COUNTFLAG_Msk) == 0)
+    RGBLED_turnOnOnlyPin(activeLED);
+    while (1)
     {
-        // Turn off LED is S1 pressed
-        if (Switch_pressed(1))
+        // Check for switch input until timer hits 0
+        while (((SysTick->CTRL) & SysTick_CTRL_COUNTFLAG_Msk) == 0)
         {
-            RGBLED_turnOff();
-            debounce();
-            return;
+            // Turn off LED is S1 pressed
+            if (Switch_pressed(1))
+            {
+                RGBLED_turnOff();
+                debounce();
+                return;
+            }
+            // Change active LED is S2 pressed
+            if (Switch_pressed(4))
+            {
+                activeLED = (activeLED + 1) % 3;
+                RGBLED_turnOnOnlyPin(activeLED);
+                debounce();
+                while (Switch_pressed(4))
+                    ;
+            }
         }
-        // Change active LED is S2 pressed
-        if (Switch_pressed(4))
-        {
-            activeLED = (activeLED + 1) % 3;
-            RGBLED_turnOnOnlyPin(activeLED);
-            debounce();
-            while (Switch_pressed(4))
-                ;
-        }
+        RGBLED_togglePin(activeLED);
     }
-    ledBlink();
 }
 
 /*!
@@ -147,7 +126,9 @@ void loop()
         ;
     debounce();
     // Start LED cycle
+    MAP_SysTick_enableModule();
     ledBlink();
+    MAP_SysTick_disableModule();
     // Wait until S1 is released before looping
     while (Switch_pressed(1))
         ;
